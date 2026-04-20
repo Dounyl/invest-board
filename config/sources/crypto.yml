@@ -1,0 +1,9 @@
+﻿# 预留：加密货币相关数据源
+source_id: crypto
+name: crypto-market
+enabled: false
+schedule: every_30_min
+endpoints: []
+storage:
+  format: parquet
+  path: data/raw/crypto

@@ -1,0 +1,12 @@
+﻿version: v1
+metrics:
+  - id: pork_price_daily
+    name: 猪肉日价格
+    domain: pork
+    unit: cny_per_kg
+    granularity: day
+  - id: pork_price_mom
+    name: 猪肉环比
+    domain: pork
+    unit: percent
+    granularity: day

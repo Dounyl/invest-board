@@ -1,0 +1,9 @@
+﻿# 预留：美债相关数据源
+source_id: ust
+name: us-treasury
+enabled: false
+schedule: daily
+endpoints: []
+storage:
+  format: parquet
+  path: data/raw/ust

@@ -1,0 +1,32 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+
+# Data artifacts (large/generated)
+data/raw/**/tmp/
+data/warehouse/*.duckdb-wal
+data/warehouse/*.duckdb.tmp
+
+# Node/web
+web/node_modules/
+web/dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OpenSpec runtime cache (if generated later)
+.openspec-cache/

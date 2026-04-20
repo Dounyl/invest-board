@@ -1,0 +1,10 @@
+﻿version: v1
+charts:
+  - id: pork-price-trend
+    type: line
+    title: 猪肉价格趋势
+    data_file: pork/timeseries.json
+  - id: pork-change-table
+    type: table
+    title: 猪肉价格变动
+    data_file: pork/rankings.json

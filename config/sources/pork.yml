@@ -1,0 +1,14 @@
+﻿# 猪肉数据源配置（MVP）
+source_id: pork
+name: pork-market
+enabled: true
+schedule: hourly
+endpoints:
+  - name: daily_price
+    method: GET
+    url: "https://example.com/pork/daily"
+    timeout_seconds: 20
+storage:
+  format: parquet
+  path: data/raw/pork
+notes: "替换为真实数据接口"

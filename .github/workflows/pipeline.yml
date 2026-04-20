@@ -1,0 +1,38 @@
+﻿name: pipeline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  build-data-and-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          echo "TODO: pip install -r requirements.txt"
+
+      - name: Ingest
+        run: |
+          echo "TODO: python scripts/ingest/pork_ingest.py"
+
+      - name: Transform
+        run: |
+          echo "TODO: python scripts/transform/run_staging.py && python scripts/transform/run_marts.py"
+
+      - name: Export
+        run: |
+          echo "TODO: python scripts/export/export_json.py"
+
+      - name: Commit exports
+        run: |
+          echo "TODO: commit data/export changes if needed"

@@ -1,0 +1,9 @@
+﻿# 预留：美联储相关数据源
+source_id: fed
+name: fed-data
+enabled: false
+schedule: daily
+endpoints: []
+storage:
+  format: parquet
+  path: data/raw/fed
