@@ -16,6 +16,11 @@ function dateDaysAgo(days) {
   return date.toISOString().slice(0, 10);
 }
 
+function monthOffset(offset) {
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + offset, 1));
+  return date.toISOString().slice(0, 7);
+}
+
 function baseRecord(indicator, extra = {}) {
   return {
     indicator_id: indicator.id,
@@ -30,22 +35,22 @@ function baseRecord(indicator, extra = {}) {
 }
 
 function sampleRecords(indicator, mode, windowDays) {
-  const startDate = dateDaysAgo(windowDays);
+  const latestDate = generatedAt.slice(0, 10);
   switch (indicator.id) {
     case "muyuan_stock_price":
       return [
-        baseRecord(indicator, { trade_date: startDate, company_id: "muyuan", company_name: "牧原股份", stock_code: "002714.SZ", close_price: 38.20, pct_change: -1.8 }),
-        baseRecord(indicator, { trade_date: dateDaysAgo(Math.max(windowDays - 3, 0)), company_id: "muyuan", company_name: "牧原股份", stock_code: "002714.SZ", close_price: 39.05, pct_change: 2.2 })
+        baseRecord(indicator, { trade_date: dateDaysAgo(3), company_id: "muyuan", company_name: "牧原股份", stock_code: "002714.SZ", close_price: 38.20, pct_change: -1.8 }),
+        baseRecord(indicator, { trade_date: latestDate, company_id: "muyuan", company_name: "牧原股份", stock_code: "002714.SZ", close_price: 39.05, pct_change: 2.2 })
       ];
     case "breeding_sow_inventory":
       return [
-        baseRecord(indicator, { period: startDate.slice(0, 7), value: 3992, disclosure_basis: "全国月度公开数据" }),
-        baseRecord(indicator, { period: generatedAt.slice(0, 7), value: 3986, disclosure_basis: "全国月度公开数据" })
+        baseRecord(indicator, { period: monthOffset(-1), value: 3992, disclosure_basis: "全国月度公开数据" }),
+        baseRecord(indicator, { period: monthOffset(0), value: 3986, disclosure_basis: "全国月度公开数据" })
       ];
     case "live_hog_ex_factory_price":
       return [
-        baseRecord(indicator, { period: startDate, value: 14.8, disclosure_basis: "周度价格监测" }),
-        baseRecord(indicator, { period: dateDaysAgo(Math.max(windowDays - 7, 0)), value: 15.2, disclosure_basis: "周度价格监测" })
+        baseRecord(indicator, { period: dateDaysAgo(7), value: 14.8, disclosure_basis: "周度价格监测" }),
+        baseRecord(indicator, { period: latestDate, value: 15.2, disclosure_basis: "周度价格监测" })
       ];
     case "leading_pork_company_stock_performance":
       return config.companies.map((company, index) => baseRecord(indicator, {
