@@ -1,120 +1,42 @@
-﻿# Invest Board
+# Invest Board
 
-一个基于 DuckDB 的轻量投资数据看板项目。
+Invest Board 是一个投资数据看板，用来把分散的公开数据整理成更容易阅读和跟踪的投资观察页面。
 
-目标：
-- 用 Python 定时采集多源数据（先从猪肉数据开始）
-- 在本地分析库（DuckDB）完成清洗与聚合
-- 导出 JSON 给静态网站做图表展示
-- 全站公开只读，无登录系统
+当前项目先从猪肉行业开始，重点观察猪价、产能、上市猪企股价、公司财务状态和行业情绪，辅助判断猪周期中的风险、机会和加仓节奏。后续会继续扩展到美联储、美债、加密等更多宏观和市场主题。
 
-## 当前技术路线（MVP）
+## 线上服务器
 
-- 采集与处理: Python
-- 分析存储: DuckDB
-- 自动化: GitHub Actions
-- 前端展示: Vite + Vue + ECharts（静态部署）
+`139.196.37.239`
 
-## 目录结构
+## 当前已完成
 
-```text
-config/                  # 数据源、指标、图表配置
-data/raw/                # 原始数据（只追加）
-data/warehouse/          # DuckDB 主库
-data/export/             # 前端消费 JSON
-sql/staging/             # 标准化 SQL
-sql/marts/               # 聚合统计 SQL
-sql/checks/              # 数据质量检查 SQL
-scripts/ingest/          # 抓取脚本
-scripts/transform/       # 清洗建模脚本
-scripts/export/          # 导出脚本
-web/                     # 静态图表站
-.github/workflows/       # CI/CD 与定时任务
-openspec/                # OpenSpec 变更管理
-```
+- 已完成猪肉行业看板，可以集中查看猪周期相关的核心信号。
+- 已整理牧原股份、温氏股份、新希望、天邦食品等头部猪企的市场表现与经营状态。
+- 已加入猪价、能繁母猪存栏、生猪出场价格、样本产能等行业观察信息。
+- 已加入公司现金、负债、利润等财务观察信息。
+- 已加入行业情绪和公司趋势对比，方便横向查看不同企业的阶段位置。
+- 已支持线上自动更新和公开访问。
 
-## 开发顺序（建议）
+## 数据来源
 
-1. 先打通猪肉数据闭环：ingest -> duckdb -> export -> chart
-2. 再扩展美联储/美债/加密模块
-3. 最后优化告警、重试、数据质量与快照
+当前看板使用公开可获取的数据，不使用私有账号数据或手工编造数据。
 
-## OpenSpec 变更
+- 股票行情：公开行情接口。
+- 行业数据：农业农村部公开月度信息。
+- 公司财务：上市公司公开财务报表与结构化财务数据。
+- 样本产能与行业监测：公开第三方样本数据。
 
-已初始化变更：
-- `openspec/changes/bootstrap-invest-board-foundation/`
-- `openspec/changes/add-muyuan-pork-indicators/`
+如果某个来源暂时无法获取，项目会保留空缺，不用示例数据替代真实数据。
 
-当前实现优先推进猪肉权益三段加仓决策看板。
+## 未来开发计划
 
-## 本地运行
+- 继续稳定猪肉行业看板，优先提高数据完整性和可读性。
+- 扩展更多猪企和更长历史周期，方便观察完整周期变化。
+- 增加美联储、美债等宏观数据页面。
+- 增加加密市场观察页面。
+- 逐步沉淀跨市场信号，用同一套视角比较不同行业和资产。
 
-当前仓库的猪肉看板 pipeline 坚持真实数据优先：股票行情通过公开行情接口冷启动抓取 2026-01-01 以来的日线数据，农业农村部月度页面抓取能繁母猪存栏与生猪出场价格，结构化财务报表抓取头部猪企现金状态。后续运行会根据已有 raw 中的最新真实交易日、月份或报告期增量刷新。尚未接入真实结构化适配器的公告成本区间会写入 0 条并输出日志，不生成样例数据。
+## 文档
 
-```bash
-node scripts/ingest/pork_ingest.mjs
-node scripts/transform/pork_transform.mjs
-node scripts/export/pork_export.mjs
-```
-
-也可以直接启动每日周期任务。脚本启动后会先立即跑一次，之后每 24 小时自动跑一次；如果对应 raw 目录没有数据，采集脚本会自动冷启动回填，否则执行增量刷新。
-
-```bash
-scripts/run_pork_daily.cmd
-```
-
-只跑一次用于验证：
-
-```bash
-node scripts/run_pork_daily.mjs --once
-```
-
-如需调整周期，可设置 `PORK_DAILY_INTERVAL_HOURS`：
-
-```bash
-set PORK_DAILY_INTERVAL_HOURS=24
-scripts/run_pork_daily.cmd
-```
-
-如需在不污染真实 `data/` 目录的情况下验证流程，可指定临时数据根目录：
-
-```bash
-set INVEST_BOARD_DATA_ROOT=web/dist/pork-verification
-node scripts/run_pork_daily.mjs --once
-```
-
-如需调整冷启动起始日期，可设置 `PORK_BACKFILL_START_DATE`：
-
-```bash
-set PORK_BACKFILL_START_DATE=2026-01-01
-node scripts/run_pork_daily.mjs --once
-```
-
-前端本地构建：
-
-```bash
-cd web
-npm install
-npm run build
-```
-
-## GitHub Pages 部署
-
-仓库已提供 `.github/workflows/pipeline.yml`。推送到 `main`、手动触发 workflow，或每日定时任务都会执行：
-
-1. `node scripts/run_pork_daily.mjs --once`
-2. 复制 `data/export/` 到 `web/public/data/export/`
-3. `cd web && npm ci && npm run build`
-4. 将 `web/dist` 发布到 GitHub Pages
-
-workflow 会使用 GitHub Actions cache 保存 `data/raw` 和 `data/warehouse` 状态。首次运行没有缓存时会冷启动回填；后续定时运行恢复缓存后会执行增量刷新。
-
-首次启用时，需要在 GitHub 仓库设置中进入 `Settings -> Pages`，将 `Build and deployment` 的来源设置为 `GitHub Actions`。
-
-## 回滚方式
-
-- 移除 `config/pork_decision_indicators.json`、`config/exports/pork_decision_dashboard.schema.json` 以及本次新增的 pork 指标配置。
-- 移除 `scripts/ingest/pork_ingest.mjs`、`scripts/transform/pork_transform.mjs`、`scripts/export/pork_export.mjs` 和共享 helper。
-- 移除新增的 `sql/staging/`、`sql/marts/`、`sql/checks/` pork SQL 文件。
-- 移除 `web/` 下本次新增的 Vue/Vite 看板入口。
-- 移除生成的 `data/export/pork/*.json` 和 `data/warehouse/pork_decision_dashboard.json`；`data/raw/` 历史文件按只追加规则保留或由人工确认后处理。
+- 技术归档与本地运行说明见 `docs/technical-archive.md`。
+- OpenSpec 规格与已归档变更见 `openspec/`。
