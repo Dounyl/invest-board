@@ -68,6 +68,11 @@ jobs:
             --exclude "web/dist/" \
             ./ "$ALIYUN_USER@$ALIYUN_HOST:$ALIYUN_APP_PATH/"
 
+      - name: Generate exports on Aliyun
+        run: |
+          ssh -i ~/.ssh/aliyun_deploy_key -p "$ALIYUN_PORT" "$ALIYUN_USER@$ALIYUN_HOST" \
+            "cd '$ALIYUN_APP_PATH' && node scripts/run_pork_daily.mjs --once && mkdir -p '$ALIYUN_WEB_PATH/data/export' && rsync -a --delete data/export/ '$ALIYUN_WEB_PATH/data/export/'"
+
       - name: Deploy static site to Aliyun
         run: |
           rsync -az --delete \
