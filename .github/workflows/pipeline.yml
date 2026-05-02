@@ -1,38 +1,77 @@
-﻿name: pipeline
+name: build-data-and-deploy-pages
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"
+    # 05:00 Asia/Shanghai every day.
+    - cron: "0 21 * * *"
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  build-data-and-export:
+  build-data-and-site:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: "3.11"
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
 
-      - name: Install dependencies
-        run: |
-          echo "TODO: pip install -r requirements.txt"
+      - name: Restore data state
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw
+            data/warehouse
+          key: pork-data-${{ github.run_id }}
+          restore-keys: |
+            pork-data-
 
-      - name: Ingest
+      - name: Generate pork exports
         run: |
-          echo "TODO: python scripts/ingest/pork_ingest.py"
+          node scripts/run_pork_daily.mjs --once
 
-      - name: Transform
+      - name: Copy exports into static public assets
         run: |
-          echo "TODO: python scripts/transform/run_staging.py && python scripts/transform/run_marts.py"
+          mkdir -p web/public/data/export
+          cp -R data/export/* web/public/data/export/
 
-      - name: Export
-        run: |
-          echo "TODO: python scripts/export/export_json.py"
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
 
-      - name: Commit exports
-        run: |
-          echo "TODO: commit data/export changes if needed"
+      - name: Build frontend
+        working-directory: web
+        env:
+          VITE_BASE_PATH: /invest-board/
+        run: npm run build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

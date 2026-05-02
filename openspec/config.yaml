@@ -1,5 +1,8 @@
 schema: spec-driven
 
+context: |
+  OpenSpec 生成的流程文件默认使用中文表达。文件结构、目录名、能力名、任务编号、代码标识符和 OpenSpec 规范关键字可以继续使用英文。
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.

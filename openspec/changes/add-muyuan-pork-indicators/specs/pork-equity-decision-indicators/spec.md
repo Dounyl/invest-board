@@ -1,86 +1,86 @@
 ## ADDED Requirements
 
-### Requirement: Three-stage decision indicator scope
-The system SHALL define the first version of the pork equity decision dashboard around three investment decision stages: sentiment low, industry turning point, and sector sentiment confirmation.
+### Requirement: 三段加仓决策指标范围
+系统 SHALL 围绕情绪低点、行业拐点和板块情绪确认三个投资决策阶段定义第一版猪肉权益看板。
 
-#### Scenario: First-version indicator set is derived
-- **WHEN** the system defines the first-version indicator scope
-- **THEN** it MUST include Muyuan stock price, national breeding sow inventory, national live hog ex-factory price, leading pork company stock performance, leading pork company disclosed cost range, and leading pork company cash condition metrics
+#### Scenario: 推导第一版指标集合
+- **WHEN** 系统定义第一版指标范围
+- **THEN** 指标集合 MUST 包含牧原股价、全国能繁母猪存栏、全国生猪出场价格、头部猪企股价表现、头部猪企披露成本区间和头部猪企现金状态指标
 
-#### Scenario: Non-essential industry metrics are excluded
-- **WHEN** the system defines the first-version indicator scope
-- **THEN** it MUST exclude commodity hog average selling price, hog slaughter volume, pork output, slaughterhouse volume, feed price, hog-corn ratio, hog-feed ratio, and sales revenue
+#### Scenario: 排除非必要行业指标
+- **WHEN** 系统定义第一版指标范围
+- **THEN** 指标集合 MUST 排除商品猪销售均价、生猪出栏量、猪肉产量、屠宰量、饲料价格、猪粮比价、猪料比价和销售收入
 
-### Requirement: Authoritative source boundary
-The system SHALL use authoritative or officially authorized sources for first-version data collection and MUST NOT use third-party market data sources for stock prices.
+### Requirement: 权威数据源边界
+系统 SHALL 使用权威或官方授权来源采集第一版数据，并且 MUST NOT 使用第三方行情数据源采集股票价格。
 
-#### Scenario: Stock price source is selected
-- **WHEN** the system selects a source for stock price data
-- **THEN** it MUST use exchange pages or authorized market data sources and MUST NOT use third-party market data sources
+#### Scenario: 选择股票价格来源
+- **WHEN** 系统选择股票价格数据源
+- **THEN** 数据源 MUST 是交易所页面或授权行情源，并且 MUST NOT 是第三方行情数据源
 
-#### Scenario: Live hog price source is selected
-- **WHEN** the system selects a source for national live hog ex-factory price
-- **THEN** it MUST use the National Development and Reform Commission price monitoring center as the first source because it provides higher-frequency weekly data
+#### Scenario: 选择全国生猪出场价格来源
+- **WHEN** 系统选择全国生猪出场价格来源
+- **THEN** 第一来源 MUST 是国家发改委价格监测中心，因为它提供频率更高的周度数据
 
-#### Scenario: Live hog price is cross-checked
-- **WHEN** the system needs a lower-frequency verification source for national live hog price
-- **THEN** it MAY use Ministry of Agriculture and Rural Affairs monthly pig product information as a cross-check source
+#### Scenario: 复核全国生猪价格
+- **WHEN** 系统需要低频复核全国生猪价格
+- **THEN** 系统 MAY 使用农业农村部月度猪产品信息作为交叉复核来源
 
-### Requirement: Industry turning point indicators
-The system SHALL represent the industry turning point using national breeding sow inventory as the leading supply indicator and national live hog ex-factory price as the price confirmation indicator.
+### Requirement: 行业拐点指标
+系统 SHALL 使用全国能繁母猪存栏代表领先供给指标，并使用全国生猪出场价格代表价格确认指标。
 
-#### Scenario: Turning point data is displayed
-- **WHEN** the dashboard presents industry turning point information
-- **THEN** it MUST show national breeding sow inventory together with national live hog ex-factory price
+#### Scenario: 展示行业拐点数据
+- **WHEN** 看板展示行业拐点信息
+- **THEN** 看板 MUST 同时展示全国能繁母猪存栏和全国生猪出场价格
 
-#### Scenario: Turning point is not over-expanded
-- **WHEN** the dashboard presents industry turning point information
-- **THEN** it MUST NOT require hog slaughter volume, pork output, slaughterhouse volume, feed price, hog-corn ratio, or hog-feed ratio in the first version
+#### Scenario: 避免过度扩展拐点指标
+- **WHEN** 看板展示行业拐点信息
+- **THEN** 第一版 MUST NOT 要求生猪出栏量、猪肉产量、屠宰量、饲料价格、猪粮比价或猪料比价
 
-### Requirement: Fixed leading pork company universe
-The system SHALL use a fixed first-version leading pork company list for cost and cash condition comparison.
+### Requirement: 固定头部猪企范围
+系统 SHALL 使用固定的第一版头部猪企名单进行成本和现金状态对比。
 
-#### Scenario: Company universe is defined
-- **WHEN** the system builds the first-version leading pork company comparison
-- **THEN** it MUST include Muyuan Foods, Wens Foodstuff, New Hope, Tianbang Food, Juxing Agriculture and Animal Husbandry, Tangrenshen, Dabeinong, and Zhengbang Technology
+#### Scenario: 定义公司范围
+- **WHEN** 系统构建第一版头部猪企对比
+- **THEN** 公司范围 MUST 包含牧原股份、温氏股份、新希望、天邦食品、巨星农牧、唐人神、大北农和正邦科技
 
-#### Scenario: Company universe is not configurable in first version
-- **WHEN** the first-version dashboard is generated
-- **THEN** it MUST NOT require users to add or remove leading pork companies through configuration
+#### Scenario: 第一版公司范围不可配置
+- **WHEN** 第一版看板生成
+- **THEN** 系统 MUST NOT 要求用户通过配置新增或删除头部猪企
 
-### Requirement: Cost and cash condition comparison
-The system SHALL compare leading pork companies using disclosed cost ranges and raw cash condition metrics without deriving subjective cash safety labels in the first version.
+### Requirement: 成本和现金状态对比
+系统 SHALL 使用披露成本区间和原始现金状态指标比较头部猪企，并且第一版 MUST NOT 生成主观现金安全标签。
 
-#### Scenario: Cost comparison is generated
-- **WHEN** the system presents cost comparison for leading pork companies
-- **THEN** it MUST use company-disclosed cost ranges as the first display basis
+#### Scenario: 生成成本对比
+- **WHEN** 系统展示头部猪企成本对比
+- **THEN** 展示依据 MUST 优先使用公司披露成本区间
 
-#### Scenario: Cash condition comparison is generated
-- **WHEN** the system presents cash condition comparison for leading pork companies
-- **THEN** it MUST include monetary funds, short-term interest-bearing debt or debt due within one year, operating cash flow, and asset-liability ratio when available
+#### Scenario: 生成现金状态对比
+- **WHEN** 系统展示头部猪企现金状态对比
+- **THEN** 在数据可得时 MUST 包含货币资金、短期有息债务或一年内到期债务、经营现金流和资产负债率
 
-#### Scenario: Cash safety labels are not generated
-- **WHEN** the system presents first-version cash condition comparison
-- **THEN** it MUST NOT generate derived labels such as safe, watch, or tight
+#### Scenario: 不生成现金安全标签
+- **WHEN** 系统展示第一版现金状态对比
+- **THEN** 系统 MUST NOT 生成安全、观察或紧张等派生标签
 
-### Requirement: Dashboard design document handoff
-The system SHALL defer first-version page layout and visualization details to a separate Markdown dashboard design document before frontend implementation.
+### Requirement: 看板设计文档交接
+系统 SHALL 在前端实现之前，将第一版页面布局和可视化细节延后到独立 Markdown 看板设计文档中定义。
 
-#### Scenario: Dashboard design is prepared
-- **WHEN** the data scope and indicator specifications are accepted
-- **THEN** the next stage MUST create a Markdown dashboard design document before implementing Vue pages or ECharts charts
+#### Scenario: 准备看板设计
+- **WHEN** 数据范围和指标规格被接受
+- **THEN** 下一阶段 MUST 先创建 Markdown 看板设计文档，再实现 Vue 页面或 ECharts 图表
 
-### Requirement: Historical backfill and incremental refresh
-The system SHALL support a cold-start historical backfill for each selected indicator and SHALL use scheduled incremental refreshes after the initial backfill is complete.
+### Requirement: 历史回填和增量刷新
+系统 SHALL 为每个选定指标支持冷启动历史回填，并在初始回填完成后使用定时增量刷新。
 
-#### Scenario: Cold-start backfill is executed
-- **WHEN** a selected indicator has no existing raw data
-- **THEN** the ingestion process MUST query a configured historical lookback window before producing dashboard exports
+#### Scenario: 执行冷启动回填
+- **WHEN** 某个选定指标没有既有 raw 数据
+- **THEN** 采集流程 MUST 按配置的历史回看窗口查询数据，再生成看板导出
 
-#### Scenario: Incremental refresh is executed
-- **WHEN** raw data already exists for a selected indicator
-- **THEN** the ingestion process MUST query only the configured incremental update window unless a manual backfill is requested
+#### Scenario: 执行增量刷新
+- **WHEN** 某个选定指标已有 raw 数据
+- **THEN** 采集流程 MUST 仅按配置的增量更新窗口查询数据，除非手动请求回填
 
-#### Scenario: Raw data remains append-only
-- **WHEN** historical backfill or incremental refresh writes raw data
-- **THEN** the system MUST append new raw records or files without overwriting historical raw data
+#### Scenario: raw 数据保持只追加
+- **WHEN** 历史回填或增量刷新写入 raw 数据
+- **THEN** 系统 MUST 追加新的 raw 记录或文件，且 MUST NOT 覆盖历史 raw 数据

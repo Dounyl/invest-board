@@ -1,22 +1,22 @@
-﻿## ADDED Requirements
+## ADDED Requirements
 
-### Requirement: Domain-aligned raw data layout
-The system SHALL organize raw market data by domain under `data/raw/<domain>/` and SHALL preserve historical snapshots as append-only data.
+### Requirement: 按领域组织 raw 数据
+系统 SHALL 将原始市场数据按领域组织到 `data/raw/<domain>/`，并以只追加方式保留历史快照。
 
-#### Scenario: Store pork raw snapshot
-- **WHEN** an ingest job for pork data completes
-- **THEN** the system writes new raw files under `data/raw/pork/` without deleting historical files
+#### Scenario: 保存猪肉 raw 快照
+- **WHEN** 猪肉数据采集任务完成
+- **THEN** 系统 MUST 在 `data/raw/pork/` 下写入新的 raw 文件，且 MUST NOT 删除或覆盖历史文件
 
-### Requirement: Source configuration contract
-The system SHALL define each data source in `config/sources/*.yml` with `source_id`, `enabled`, `schedule`, `endpoints`, and `storage` fields.
+### Requirement: 数据源配置契约
+系统 SHALL 在 `config/sources/*.yml` 中定义每个数据源，并包含 `source_id`、`enabled`、`schedule`、`endpoints` 和 `storage` 字段。
 
-#### Scenario: Load source configuration
-- **WHEN** a new source config file is added
-- **THEN** the ingest layer can parse required fields and determine whether the source is active
+#### Scenario: 加载数据源配置
+- **WHEN** 新增一个 source config 文件
+- **THEN** 采集层 MUST 能解析必填字段，并判断该数据源是否启用
 
-### Requirement: Expandable multi-domain structure
-The system SHALL reserve first-class domain paths for pork, fed, ust, and crypto data from project initialization.
+### Requirement: 可扩展的多领域结构
+系统 SHALL 在项目初始化阶段为 pork、fed、ust 和 crypto 预留一等领域路径。
 
-#### Scenario: Add future domain pipeline
-- **WHEN** a developer starts implementing a Fed data pipeline
-- **THEN** the repository already contains `config/sources/fed.yml` and `data/raw/fed/` as standard integration points
+#### Scenario: 新增未来 Fed 数据流水线
+- **WHEN** 开发者开始实现 Fed 数据流水线
+- **THEN** 仓库 SHOULD 已经包含 `config/sources/fed.yml` 和 `data/raw/fed/` 作为标准接入点

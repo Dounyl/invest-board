@@ -1,12 +1,38 @@
-﻿version: v1
+version: v1
 metrics:
-  - id: pork_price_daily
-    name: 猪肉日价格
+  - id: muyuan_stock_price
+    name: 牧原股价
+    domain: pork
+    unit: cny
+    granularity: trading_day
+    decision_stage: sentiment_low
+  - id: breeding_sow_inventory
+    name: 全国能繁母猪存栏
+    domain: pork
+    unit: ten_thousand_head
+    granularity: month
+    decision_stage: industry_turning_point
+  - id: live_hog_ex_factory_price
+    name: 全国生猪出场价格
     domain: pork
     unit: cny_per_kg
-    granularity: day
-  - id: pork_price_mom
-    name: 猪肉环比
+    granularity: week
+    decision_stage: industry_turning_point
+  - id: leading_pork_company_stock_performance
+    name: 头部猪企股价表现
     domain: pork
     unit: percent
-    granularity: day
+    granularity: trading_day
+    decision_stage: sector_sentiment_confirmation
+  - id: leading_pork_company_cost_range
+    name: 头部猪企披露成本区间
+    domain: pork
+    unit: cny_per_kg
+    granularity: report_period
+    decision_stage: leading_company_resilience
+  - id: leading_pork_company_cash_condition
+    name: 头部猪企现金状态
+    domain: pork
+    unit: mixed
+    granularity: report_period
+    decision_stage: leading_company_resilience

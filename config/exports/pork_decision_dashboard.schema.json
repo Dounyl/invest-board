@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PorkDecisionDashboardExport",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "source_policy", "sections"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "generated_at": { "type": "string" },
+    "source_policy": { "type": "object" },
+    "sections": {
+      "type": "object",
+      "required": ["sentiment_low", "industry_turning_point", "sector_sentiment_confirmation", "leading_company_resilience"],
+      "properties": {
+        "sentiment_low": { "type": "object" },
+        "industry_turning_point": { "type": "object" },
+        "sector_sentiment_confirmation": { "type": "object" },
+        "leading_company_resilience": { "type": "object" }
+      }
+    }
+  }
+}

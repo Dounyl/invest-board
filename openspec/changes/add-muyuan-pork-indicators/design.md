@@ -34,6 +34,7 @@ Alternatives considered:
 ### Decision 2: 行业拐点使用全国能繁母猪存栏，并用全国生猪出场价格做确认
 
 Rationale: 用户明确认为拐点和母猪存栏量有关。能繁母猪存栏是供给周期的核心领先指标，但只看存栏容易过早判断拐点；全国生猪出场价格作为价格确认指标，可以验证供给变化是否开始传导到市场价格。
+
 全国生猪出场价格第一来源采用国家发改委价格监测中心，因为其发布频率高于农业农村部月度专题数据；农业农村部数据作为月度复核来源。
 
 Alternatives considered:
@@ -81,7 +82,7 @@ Suggested future artifact:
 - `openspec/changes/add-muyuan-pork-indicators/dashboard-design.md`
 
 Alternatives considered:
-- 直接在 design.md 内完成看板设计：会让当前技术设计混入过多页面细节。
+- 直接在 `design.md` 内完成看板设计：会让当前技术设计混入过多页面细节。
 - 直接实现前端：当前数据契约和指标规格尚未完成，容易返工。
 
 ## Risks / Trade-offs
@@ -96,7 +97,7 @@ Alternatives considered:
 1. 先完成 OpenSpec specs，明确指标、数据源、输出契约和非目标范围。
 2. 下一阶段新增看板设计 Markdown，描述三段加仓面板和头部猪企安全垫模块。
 3. 实现时先生成静态 JSON 样例，再接真实数据采集。
-4. 若需要回滚，删除本变更新增的 OpenSpec 文件和后续配置/脚本即可，不影响现有数据目录。
+4. 若需要回滚，删除本变更新增的 OpenSpec 文件和后续配置、脚本、SQL、导出与看板入口即可，不影响现有数据目录。
 
 ## Open Questions
 

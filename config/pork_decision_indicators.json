@@ -1,0 +1,146 @@
+{
+  "version": "v1",
+  "domain": "pork",
+  "dashboard_id": "pork-equity-decision-dashboard",
+  "source_policy": {
+    "stock_price": "exchange_page_or_authorized_market_data_only",
+    "third_party_market_data_allowed": false,
+    "raw_append_only": true
+  },
+  "companies": [
+    { "id": "muyuan", "name": "牧原股份", "stock_code": "002714.SZ", "role": "primary" },
+    { "id": "wens", "name": "温氏股份", "stock_code": "300498.SZ", "role": "peer" },
+    { "id": "newhope", "name": "新希望", "stock_code": "000876.SZ", "role": "peer" },
+    { "id": "tianbang", "name": "天邦食品", "stock_code": "002124.SZ", "role": "peer" },
+    { "id": "juxing", "name": "巨星农牧", "stock_code": "603477.SH", "role": "peer" },
+    { "id": "tangrenshen", "name": "唐人神", "stock_code": "002567.SZ", "role": "peer" },
+    { "id": "dabeinong", "name": "大北农", "stock_code": "002385.SZ", "role": "peer" },
+    { "id": "zhengbang", "name": "正邦科技", "stock_code": "002157.SZ", "role": "peer" }
+  ],
+  "indicators": [
+    {
+      "id": "muyuan_stock_price",
+      "name": "牧原股价",
+      "decision_stage": "sentiment_low",
+      "data_family": "stock",
+      "granularity": "trading_day",
+      "unit": "cny",
+      "raw_path": "data/raw/pork/muyuan_stock_price/",
+      "primary_source": {
+        "source_id": "exchange_or_authorized_market_data",
+        "name": "交易所页面或授权行情源",
+        "authority_level": "official_or_authorized",
+        "third_party_market_data": false
+      },
+      "historical_backfill": { "lookback_days": 1825 },
+      "incremental_refresh": { "lookback_days": 10 },
+      "required_fields": ["trade_date", "stock_code", "close_price", "source_id", "generated_at"]
+    },
+    {
+      "id": "breeding_sow_inventory",
+      "name": "全国能繁母猪存栏",
+      "decision_stage": "industry_turning_point",
+      "data_family": "industry",
+      "granularity": "month",
+      "unit": "ten_thousand_head",
+      "raw_path": "data/raw/pork/breeding_sow_inventory/",
+      "primary_source": {
+        "source_id": "mara_or_nbs",
+        "name": "农业农村部或国家统计局公开数据",
+        "authority_level": "official"
+      },
+      "historical_backfill": { "lookback_days": 3650 },
+      "incremental_refresh": { "lookback_days": 90 },
+      "required_fields": ["period", "value", "source_id", "generated_at"]
+    },
+    {
+      "id": "live_hog_ex_factory_price",
+      "name": "全国生猪出场价格",
+      "decision_stage": "industry_turning_point",
+      "data_family": "industry",
+      "granularity": "week",
+      "unit": "cny_per_kg",
+      "raw_path": "data/raw/pork/live_hog_ex_factory_price/",
+      "primary_source": {
+        "source_id": "ndrc_price_monitoring_center",
+        "name": "国家发改委价格监测中心",
+        "authority_level": "official",
+        "reason": "发布频率高于月度专题数据"
+      },
+      "cross_check_sources": [
+        { "source_id": "mara_monthly_pig_product", "name": "农业农村部月度猪产品信息", "granularity": "month" }
+      ],
+      "historical_backfill": { "lookback_days": 1825 },
+      "incremental_refresh": { "lookback_days": 28 },
+      "required_fields": ["period", "value", "source_id", "generated_at"]
+    },
+    {
+      "id": "leading_pork_company_stock_performance",
+      "name": "头部猪企股价表现",
+      "decision_stage": "sector_sentiment_confirmation",
+      "data_family": "stock",
+      "granularity": "trading_day",
+      "unit": "percent",
+      "raw_path": "data/raw/pork/leading_pork_company_stock_performance/",
+      "primary_source": {
+        "source_id": "exchange_or_authorized_market_data",
+        "name": "交易所页面或授权行情源",
+        "authority_level": "official_or_authorized",
+        "third_party_market_data": false
+      },
+      "historical_backfill": { "lookback_days": 365 },
+      "incremental_refresh": { "lookback_days": 10 },
+      "required_fields": ["trade_date", "company_id", "stock_code", "pct_change", "source_id", "generated_at"]
+    },
+    {
+      "id": "leading_pork_company_cost_range",
+      "name": "头部猪企披露成本区间",
+      "decision_stage": "leading_company_resilience",
+      "data_family": "announcement",
+      "granularity": "report_period",
+      "unit": "cny_per_kg",
+      "raw_path": "data/raw/pork/leading_pork_company_cost_range/",
+      "primary_source": {
+        "source_id": "cninfo_announcements",
+        "name": "巨潮资讯上市公司公告",
+        "authority_level": "official_disclosure"
+      },
+      "historical_backfill": { "lookback_days": 1095 },
+      "incremental_refresh": { "lookback_days": 45 },
+      "required_fields": ["report_period", "company_id", "cost_low", "cost_high", "disclosure_basis", "source_id", "generated_at"]
+    },
+    {
+      "id": "leading_pork_company_cash_condition",
+      "name": "头部猪企现金状态",
+      "decision_stage": "leading_company_resilience",
+      "data_family": "financial",
+      "granularity": "report_period",
+      "unit": "mixed",
+      "raw_path": "data/raw/pork/leading_pork_company_cash_condition/",
+      "primary_source": {
+        "source_id": "cninfo_periodic_reports",
+        "name": "巨潮资讯定期报告",
+        "authority_level": "official_disclosure"
+      },
+      "historical_backfill": { "lookback_days": 1095 },
+      "incremental_refresh": { "lookback_days": 45 },
+      "required_fields": ["report_period", "company_id", "monetary_funds", "short_term_interest_bearing_debt", "operating_cash_flow", "asset_liability_ratio", "source_id", "generated_at"]
+    }
+  ],
+  "excluded_first_version_metrics": [
+    "商品猪销售均价",
+    "生猪出栏量",
+    "猪肉产量",
+    "屠宰量",
+    "饲料价格",
+    "猪粮比价",
+    "猪料比价",
+    "销售收入"
+  ],
+  "exports": {
+    "dashboard": "data/export/pork/decision-dashboard.json",
+    "overview": "data/export/pork/overview.json",
+    "timeseries": "data/export/pork/timeseries.json",
+    "rankings": "data/export/pork/rankings.json"
+  }
+}

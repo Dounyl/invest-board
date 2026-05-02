@@ -1,10 +1,18 @@
-﻿version: v1
+version: v1
 charts:
-  - id: pork-price-trend
+  - id: pork-decision-dashboard
+    type: dashboard
+    title: 猪肉权益三段加仓决策看板
+    data_file: pork/decision-dashboard.json
+  - id: pork-sentiment-low
     type: line
-    title: 猪肉价格趋势
+    title: 情绪低点：牧原股价
     data_file: pork/timeseries.json
-  - id: pork-change-table
+  - id: pork-industry-turning-point
+    type: dual-axis-line
+    title: 行业拐点：能繁母猪存栏与生猪出场价格
+    data_file: pork/timeseries.json
+  - id: pork-leading-company-comparison
     type: table
-    title: 猪肉价格变动
+    title: 头部猪企成本与现金状态对比
     data_file: pork/rankings.json

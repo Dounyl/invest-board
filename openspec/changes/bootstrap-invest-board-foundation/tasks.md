@@ -1,32 +1,32 @@
-﻿## 1. Project Foundation
+## 1. Project Foundation
 
-- [ ] 1.1 Initialize Python dependency files (`requirements.txt` or `pyproject.toml`) for ingest/transform/export scripts
-- [ ] 1.2 Add script entrypoints in `scripts/ingest/`, `scripts/transform/`, and `scripts/export/`
-- [ ] 1.3 Validate repository layout against `README.md` and `AGENTS.md` constraints
+- [ ] 1.1 初始化 Python 依赖文件，选择 `requirements.txt` 或 `pyproject.toml` 支持采集、转换和导出脚本运行。
+- [ ] 1.2 在 `scripts/ingest/`、`scripts/transform/`、`scripts/export/` 下新增可执行入口。
+- [ ] 1.3 对照 `README.md` 和 `AGENTS.md` 校验仓库目录结构与协作约束。
 
 ## 2. Ingestion Layer (Pork MVP)
 
-- [ ] 2.1 Implement `scripts/ingest/pork_ingest.py` to fetch pork data and write append-only raw files
-- [ ] 2.2 Implement source-config loading from `config/sources/pork.yml`
-- [ ] 2.3 Add ingest logging and retry behavior for transient request failures
+- [ ] 2.1 实现 `scripts/ingest/pork_ingest.py`，支持采集猪肉相关数据并以只追加方式写入 raw 文件。
+- [ ] 2.2 实现 `config/sources/pork.yml` 的数据源配置加载逻辑。
+- [ ] 2.3 为采集流程增加日志和瞬时请求失败的重试行为。
 
 ## 3. DuckDB Transform and Quality
 
-- [ ] 3.1 Create staging SQL for pork source normalization in `sql/staging/`
-- [ ] 3.2 Create marts SQL for chart-facing aggregates in `sql/marts/`
-- [ ] 3.3 Create data quality checks in `sql/checks/` (nulls, duplicates, date continuity)
-- [ ] 3.4 Implement transform runners to execute staging, marts, and checks in order
+- [ ] 3.1 在 `sql/staging/` 中创建猪肉数据源标准化 SQL。
+- [ ] 3.2 在 `sql/marts/` 中创建面向图表的聚合 SQL。
+- [ ] 3.3 在 `sql/checks/` 中创建数据质量检查 SQL，覆盖空值、重复值和日期连续性。
+- [ ] 3.4 实现转换 runner，按 staging、marts、checks 顺序执行 SQL。
 
 ## 4. Export Contract and Dashboard Consumption
 
-- [ ] 4.1 Implement JSON export script to write stable payloads under `data/export/pork/`
-- [ ] 4.2 Define and document JSON schema for `overview.json`, `timeseries.json`, and `rankings.json`
-- [ ] 4.3 Scaffold `web/` app with Vite + Vue + ECharts and read-only data service abstraction
-- [ ] 4.4 Build initial pork dashboard page with timestamp and source disclaimer
+- [ ] 4.1 实现 JSON 导出脚本，将稳定载荷写入 `data/export/pork/`。
+- [ ] 4.2 定义并记录 `overview.json`、`timeseries.json`、`rankings.json` 的 JSON schema。
+- [ ] 4.3 搭建 `web/` 应用，使用 Vite、Vue、ECharts，并提供只读数据服务抽象。
+- [ ] 4.4 实现第一版猪肉看板页面，展示更新时间和数据来源声明。
 
 ## 5. Automation and Delivery
 
-- [ ] 5.1 Replace placeholder steps in `.github/workflows/pipeline.yml` with real ingest/transform/export commands
-- [ ] 5.2 Configure CI secrets usage and fail-fast behavior for missing credentials
-- [ ] 5.3 Add deployment step for static site publishing
-- [ ] 5.4 Add basic runbook section in `README.md` for local run, CI run, and rollback
+- [ ] 5.1 将 `.github/workflows/pipeline.yml` 中的占位步骤替换为真实的采集、转换和导出命令。
+- [ ] 5.2 配置 GitHub Secrets 使用方式，并在缺少必要凭据时快速失败。
+- [ ] 5.3 增加静态站发布步骤。
+- [ ] 5.4 在 `README.md` 中补充本地运行、CI 运行和回滚的 runbook。

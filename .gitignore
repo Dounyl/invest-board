@@ -13,6 +13,7 @@ data/warehouse/*.duckdb.tmp
 # Node/web
 web/node_modules/
 web/dist/
+web/public/data/export/
 
 # IDE / OS
 .vscode/
