@@ -6,6 +6,11 @@ __pycache__/
 venv/
 
 # Data artifacts (large/generated)
+data/raw/
+!data/raw/.gitkeep
+data/export/
+!data/export/.gitkeep
+data/warehouse/*.json
 data/raw/**/tmp/
 data/warehouse/*.duckdb-wal
 data/warehouse/*.duckdb.tmp
@@ -13,7 +18,8 @@ data/warehouse/*.duckdb.tmp
 # Node/web
 web/node_modules/
 web/dist/
-web/public/data/export/
+web/public/data/
+!web/public/data/.gitkeep
 
 # IDE / OS
 .vscode/

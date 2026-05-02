@@ -50,26 +50,46 @@ function yyyymmdd(date) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
+  return retryFetch(url, {
     headers: {
       "accept": "application/json,text/plain,*/*",
       "user-agent": "invest-board/0.1 local data pipeline"
-    }
+    },
+    parse: (response) => response.json()
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}: ${url}`);
-  return response.json();
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, {
+  return retryFetch(url, {
+    allowNotFound: true,
     headers: {
       "accept": "text/html,application/xhtml+xml,*/*",
       "user-agent": "invest-board/0.1 local data pipeline"
-    }
+    },
+    parse: (response) => response.text()
   });
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}: ${url}`);
-  return response.text();
+}
+
+async function retryFetch(url, { allowNotFound = false, headers, parse }) {
+  const attempts = Number(process.env.PORK_FETCH_ATTEMPTS ?? 3);
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), Number(process.env.PORK_FETCH_TIMEOUT_MS ?? 20000));
+    try {
+      const response = await fetch(url, { headers, signal: controller.signal });
+      if (allowNotFound && response.status === 404) return null;
+      if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      return await parse(response);
+    } catch (error) {
+      lastError = error;
+      console.warn(`[pork-ingest] fetch attempt ${attempt}/${attempts} failed: ${error.message}; url=${url}`);
+      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  throw new Error(`${lastError?.message ?? "fetch failed"}; url=${url}`);
 }
 
 async function fetchEastmoneyDailyKlines(company, beginDate) {
@@ -391,16 +411,26 @@ function skipUnsupportedRealOnly(indicator) {
   return [];
 }
 
+async function runIndicator(indicator, task) {
+  try {
+    return await task();
+  } catch (error) {
+    console.error(`[pork-ingest] ${indicator.id}: records=0, reason=source adapter failed; error=${error.message}`);
+    console.error("[pork-ingest] source failure is non-fatal; no synthetic data written");
+    return [];
+  }
+}
+
 const written = [];
 for (const indicator of config.indicators) {
   if (indicator.id === "muyuan_stock_price") {
-    written.push(...await ingestStockPrices(indicator));
+    written.push(...await runIndicator(indicator, () => ingestStockPrices(indicator)));
   } else if (indicator.id === "breeding_sow_inventory" || indicator.id === "live_hog_ex_factory_price") {
-    written.push(...await ingestMoaIndicator(indicator));
+    written.push(...await runIndicator(indicator, () => ingestMoaIndicator(indicator)));
   } else if (indicator.id === "leading_pork_company_stock_performance") {
-    written.push(...await ingestSectorStockPerformance(indicator));
+    written.push(...await runIndicator(indicator, () => ingestSectorStockPerformance(indicator)));
   } else if (indicator.id === "leading_pork_company_cash_condition") {
-    written.push(...await ingestFinancialCondition(indicator));
+    written.push(...await runIndicator(indicator, () => ingestFinancialCondition(indicator)));
   } else {
     written.push(...skipUnsupportedRealOnly(indicator));
   }
