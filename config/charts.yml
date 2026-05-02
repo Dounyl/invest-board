@@ -9,8 +9,8 @@ charts:
     title: 情绪低点：牧原股价
     data_file: pork/timeseries.json
   - id: pork-industry-turning-point
-    type: dual-axis-line
-    title: 行业拐点：能繁母猪存栏与生猪出场价格
+    type: multi-panel-line
+    title: 行业拐点：官方指标与第三方样本监测
     data_file: pork/timeseries.json
   - id: pork-leading-company-comparison
     type: table

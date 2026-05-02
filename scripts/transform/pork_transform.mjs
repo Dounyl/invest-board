@@ -23,6 +23,47 @@ function latestTradeDateByCompany(items) {
   return [...map.values()].sort((left, right) => String(left.stock_code).localeCompare(String(right.stock_code)));
 }
 
+function round(value, digits = 2) {
+  if (!Number.isFinite(value)) return null;
+  const scale = 10 ** digits;
+  return Math.round(value * scale) / scale;
+}
+
+function groupBy(items, keyFn) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(item);
+  }
+  return map;
+}
+
+function normalizedSentimentWeights(companies) {
+  const configuredTotal = companies.reduce((sum, company) => sum + Number(company.sentiment_weight ?? 0), 0);
+  const fallbackWeight = companies.length ? 1 / companies.length : 0;
+  return new Map(companies.map((company) => [
+    company.id,
+    configuredTotal > 0 ? Number(company.sentiment_weight ?? 0) / configuredTotal : fallbackWeight
+  ]));
+}
+
+function oneMonthPctChange(rows, lookbackSessions = 20) {
+  const sorted = [...rows].sort((left, right) => String(left.trade_date).localeCompare(String(right.trade_date)));
+  const latest = sorted.at(-1);
+  if (!latest || sorted.length < 2) return null;
+  const base = sorted[Math.max(0, sorted.length - 1 - lookbackSessions)];
+  if (!base?.close_price) return null;
+  return ((latest.close_price / base.close_price) - 1) * 100;
+}
+
+function sentimentLabel(score) {
+  if (!Number.isFinite(score)) return "样本不足";
+  if (score >= 3) return "偏积极";
+  if (score <= -3) return "偏谨慎";
+  return "中性震荡";
+}
+
 function byIndicator(id) {
   return records.filter((record) => record.indicator_id === id);
 }
@@ -34,7 +75,56 @@ const industry = latestBy([
   ...byIndicator("breeding_sow_inventory"),
   ...byIndicator("live_hog_ex_factory_price")
 ], (item) => `${item.indicator_id}:${item.period}`);
-const sector = latestTradeDateByCompany(latestBy(byIndicator("leading_pork_company_stock_performance"), (item) => `${item.company_id}:${item.trade_date}`));
+const thirdPartySowCapacity = latestBy(
+  byIndicator("third_party_sow_capacity_monitoring"),
+  (item) => `${item.provider}:${item.period}`
+).sort((left, right) => {
+  const byProvider = String(left.provider).localeCompare(String(right.provider));
+  if (byProvider !== 0) return byProvider;
+  return String(left.period).localeCompare(String(right.period));
+});
+const sectorHistory = latestBy(
+  byIndicator("leading_pork_company_stock_performance"),
+  (item) => `${item.company_id}:${item.trade_date}`
+);
+const sectorByCompany = groupBy(sectorHistory, (item) => item.company_id);
+const sectorWeights = normalizedSentimentWeights(config.companies);
+const sector = latestTradeDateByCompany(sectorHistory).map((item) => {
+  const company = config.companies.find((configCompany) => configCompany.id === item.company_id);
+  const sentimentWeight = sectorWeights.get(item.company_id) ?? 0;
+  return {
+    ...item,
+    sentiment_weight: round(sentimentWeight, 4),
+    one_month_pct_change: round(oneMonthPctChange(sectorByCompany.get(item.company_id) ?? [])),
+    sentiment_role: company?.role ?? "peer"
+  };
+});
+const sectorWithMomentum = sector.filter((item) => Number.isFinite(item.one_month_pct_change));
+const availableWeight = sectorWithMomentum.reduce((sum, item) => sum + item.sentiment_weight, 0);
+const sectorSentimentScore = availableWeight > 0
+  ? sectorWithMomentum.reduce((sum, item) => sum + item.one_month_pct_change * item.sentiment_weight, 0) / availableWeight
+  : null;
+const positiveWeight = availableWeight > 0
+  ? sectorWithMomentum
+    .filter((item) => item.one_month_pct_change > 0)
+    .reduce((sum, item) => sum + item.sentiment_weight, 0) / availableWeight
+  : null;
+const sectorPriceSeries = [...sectorByCompany.entries()].map(([companyId, rows]) => {
+  const company = config.companies.find((configCompany) => configCompany.id === companyId);
+  return {
+    company_id: companyId,
+    company_name: company?.name ?? rows.at(-1)?.company_name ?? companyId,
+    stock_code: company?.stock_code ?? rows.at(-1)?.stock_code ?? null,
+    rows: rows
+      .filter((row) => Number.isFinite(row.close_price))
+      .sort((left, right) => String(left.trade_date).localeCompare(String(right.trade_date)))
+      .map((row) => ({
+        trade_date: row.trade_date,
+        close_price: row.close_price,
+        pct_change: row.pct_change
+      }))
+  };
+}).sort((left, right) => String(left.stock_code).localeCompare(String(right.stock_code)));
 const costs = latestBy(byIndicator("leading_pork_company_cost_range"), (item) => `${item.company_id}:${item.report_period}`);
 const cash = latestBy(byIndicator("leading_pork_company_cash_condition"), (item) => `${item.company_id}:${item.report_period}`);
 
@@ -77,15 +167,34 @@ const mart = {
     industry_turning_point: {
       title: "行业拐点",
       description: "用能繁母猪存栏作为供给领先指标，用全国生猪出场价格做价格确认。",
-      data_freshness: industry.map((item) => item.generated_at).sort().at(-1) ?? null,
-      source_notes: "全国生猪出场价格第一来源为国家发改委价格监测中心；农业农村部月度数据可做复核。",
-      series: industry
+      data_freshness: [...industry, ...thirdPartySowCapacity].map((item) => item.generated_at).sort().at(-1) ?? null,
+      source_notes: "官方存栏与价格数据用于主判断；第三方样本监测仅做高频辅助，不与官方绝对量混线。",
+      sample_notes: "样本监测/第三方：上海钢联/Mysteel、卓创资讯、涌益咨询等公开转载口径，展示样本能繁母猪存栏月环比。",
+      series: industry,
+      sample_series: thirdPartySowCapacity
     },
     sector_sentiment_confirmation: {
       title: "板块情绪确认",
       description: "观察头部猪企股价表现是否从个股信号扩散到板块信号。",
       data_freshness: sector.map((item) => item.generated_at).sort().at(-1) ?? null,
       source_notes: "仅使用固定第一版头部猪企名单。",
+      sentiment: {
+        metric_name: "养殖板块加权情绪值",
+        score: round(sectorSentimentScore),
+        label: sentimentLabel(sectorSentimentScore),
+        positive_weight: round(positiveWeight == null ? null : positiveWeight * 100),
+        available_weight: round(availableWeight * 100),
+        lookback_sessions: 20,
+        formula: "Σ(标准化公司权重 × 近20交易日涨跌幅)",
+        evaluation: "综合值为正代表样本股票近20交易日加权上涨、板块风险偏好改善；为负代表加权下跌、情绪偏谨慎。绝对值达到3个百分点以上时标记为偏积极或偏谨慎。",
+        weights: config.companies.map((company) => ({
+          company_id: company.id,
+          company_name: company.name,
+          stock_code: company.stock_code,
+          weight: round(sectorWeights.get(company.id) * 100)
+        }))
+      },
+      price_series: sectorPriceSeries,
       rows: sector
     },
     leading_company_resilience: {

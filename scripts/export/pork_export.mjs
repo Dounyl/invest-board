@@ -23,11 +23,14 @@ writeJson("data/export/pork/timeseries.json", {
   schema_version: dashboard.schema_version,
   generated_at: dashboard.generated_at,
   sentiment_low: dashboard.sections.sentiment_low.series,
-  industry_turning_point: dashboard.sections.industry_turning_point.series
+  industry_turning_point: dashboard.sections.industry_turning_point.series,
+  industry_sample_monitoring: dashboard.sections.industry_turning_point.sample_series
 });
 writeJson("data/export/pork/rankings.json", {
   schema_version: dashboard.schema_version,
   generated_at: dashboard.generated_at,
+  sector_sentiment: dashboard.sections.sector_sentiment_confirmation.sentiment,
+  sector_price_series: dashboard.sections.sector_sentiment_confirmation.price_series,
   sector_sentiment_confirmation: dashboard.sections.sector_sentiment_confirmation.rows,
   leading_company_resilience: dashboard.sections.leading_company_resilience.rows
 });

@@ -35,6 +35,16 @@ sources:
       format: jsonl
       path: data/raw/pork/breeding_sow_inventory
     notes: 全国能繁母猪存栏来源。
+  - source_id: public_research_reports
+    name: 公开研报或第三方样本数据转载
+    enabled: true
+    schedule: monthly
+    data_family: third_party_sample
+    endpoints: []
+    storage:
+      format: jsonl
+      path: data/raw/pork/third_party_sow_capacity_monitoring
+    notes: 上海钢联/Mysteel、卓创资讯、涌益咨询等样本口径，仅做辅助监测，不与官方存栏绝对量混线。
   - source_id: cninfo_announcements
     name: 巨潮资讯上市公司公告
     enabled: true

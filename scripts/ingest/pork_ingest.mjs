@@ -32,6 +32,73 @@ const financialSource = {
   third_party_market_data: true
 };
 
+const sampleMonitorSource = {
+  source_id: "public_research_reports",
+  source_name: "公开研报或第三方样本数据转载",
+  source_authority_level: "third_party_sample",
+  third_party_market_data: true
+};
+
+const thirdPartySowCapacitySeeds = [
+  {
+    period: "2026-02",
+    provider: "Mysteel",
+    provider_name: "上海钢联/Mysteel",
+    value: -0.02,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  },
+  {
+    period: "2026-03",
+    provider: "Mysteel",
+    provider_name: "上海钢联/Mysteel",
+    value: -0.34,
+    ytd_change: -2,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  },
+  {
+    period: "2026-02",
+    provider: "卓创资讯",
+    provider_name: "卓创资讯",
+    value: -0.35,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  },
+  {
+    period: "2026-03",
+    provider: "卓创资讯",
+    provider_name: "卓创资讯",
+    value: -0.98,
+    ytd_change: -4.9,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  },
+  {
+    period: "2026-02",
+    provider: "涌益咨询",
+    provider_name: "涌益咨询",
+    value: 0.39,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  },
+  {
+    period: "2026-03",
+    provider: "涌益咨询",
+    provider_name: "涌益咨询",
+    value: -0.07,
+    ytd_change: -0.43,
+    disclosure_basis: "样本能繁母猪存栏月环比",
+    sample_scope: "第三方样本监测",
+    source_url: "https://finance.sina.com.cn/roll/2026-04-15/doc-infntvrm3059940.shtml"
+  }
+];
+
 function normalizeDate(value) {
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) throw new Error(`Invalid date: ${value}`);
@@ -164,6 +231,24 @@ function latestRawDate(rawDir, dateField) {
 
 function latestRawPeriod(rawDir, periodField) {
   return latestRawDate(rawDir, periodField);
+}
+
+function existingThirdPartySampleKeys(rawDir) {
+  const keys = new Set();
+  for (const filePath of listJsonlFiles(rawDir)) {
+    const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      try {
+        const record = JSON.parse(line);
+        if (record.real_data === true && record.period && record.provider) {
+          keys.add(`${record.provider}:${record.period}`);
+        }
+      } catch {
+        // Ignore malformed historical raw lines; quality checks can flag them separately.
+      }
+    }
+  }
+  return keys;
 }
 
 function writeJsonl(rawDir, records, mode) {
@@ -406,6 +491,28 @@ async function ingestFinancialCondition(indicator) {
   return written ? [written] : [];
 }
 
+async function ingestThirdPartySowCapacityMonitoring(indicator) {
+  const rawDir = resolvePath(indicator.raw_path);
+  const mode = latestRawPeriod(rawDir, "period") ? "incremental" : "backfill";
+  const existingKeys = manualBackfill ? new Set() : existingThirdPartySampleKeys(rawDir);
+  const records = thirdPartySowCapacitySeeds
+    .filter((record) => !existingKeys.has(`${record.provider}:${record.period}`))
+    .map((record) => ({
+      real_data: true,
+      indicator_id: indicator.id,
+      indicator_name: indicator.name,
+      unit: indicator.unit,
+      generated_at: generatedAt,
+      ingest_mode: mode,
+      query_start_date: coldStartBegin,
+      ...record,
+      ...sampleMonitorSource
+    }));
+  const written = writeJsonl(rawDir, records, mode);
+  console.log(`[pork-ingest] ${indicator.id}: mode=${mode}, source=${sampleMonitorSource.source_id}, records=${records.length}`);
+  return written ? [written] : [];
+}
+
 function skipUnsupportedRealOnly(indicator) {
   console.log(`[pork-ingest] ${indicator.id}: records=0, reason=real source adapter not implemented; no synthetic data written`);
   return [];
@@ -431,6 +538,8 @@ for (const indicator of config.indicators) {
     written.push(...await runIndicator(indicator, () => ingestSectorStockPerformance(indicator)));
   } else if (indicator.id === "leading_pork_company_cash_condition") {
     written.push(...await runIndicator(indicator, () => ingestFinancialCondition(indicator)));
+  } else if (indicator.id === "third_party_sow_capacity_monitoring") {
+    written.push(...await runIndicator(indicator, () => ingestThirdPartySowCapacityMonitoring(indicator)));
   } else {
     written.push(...skipUnsupportedRealOnly(indicator));
   }

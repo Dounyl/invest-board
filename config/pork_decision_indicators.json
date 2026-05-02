@@ -8,14 +8,14 @@
     "raw_append_only": true
   },
   "companies": [
-    { "id": "muyuan", "name": "牧原股份", "stock_code": "002714.SZ", "role": "primary" },
-    { "id": "wens", "name": "温氏股份", "stock_code": "300498.SZ", "role": "peer" },
-    { "id": "newhope", "name": "新希望", "stock_code": "000876.SZ", "role": "peer" },
-    { "id": "tianbang", "name": "天邦食品", "stock_code": "002124.SZ", "role": "peer" },
-    { "id": "juxing", "name": "巨星农牧", "stock_code": "603477.SH", "role": "peer" },
-    { "id": "tangrenshen", "name": "唐人神", "stock_code": "002567.SZ", "role": "peer" },
-    { "id": "dabeinong", "name": "大北农", "stock_code": "002385.SZ", "role": "peer" },
-    { "id": "zhengbang", "name": "正邦科技", "stock_code": "002157.SZ", "role": "peer" }
+    { "id": "muyuan", "name": "牧原股份", "stock_code": "002714.SZ", "role": "primary", "sentiment_weight": 0.35 },
+    { "id": "wens", "name": "温氏股份", "stock_code": "300498.SZ", "role": "peer", "sentiment_weight": 0.2 },
+    { "id": "newhope", "name": "新希望", "stock_code": "000876.SZ", "role": "peer", "sentiment_weight": 0.15 },
+    { "id": "tianbang", "name": "天邦食品", "stock_code": "002124.SZ", "role": "peer", "sentiment_weight": 0.06 },
+    { "id": "juxing", "name": "巨星农牧", "stock_code": "603477.SH", "role": "peer", "sentiment_weight": 0.06 },
+    { "id": "tangrenshen", "name": "唐人神", "stock_code": "002567.SZ", "role": "peer", "sentiment_weight": 0.06 },
+    { "id": "dabeinong", "name": "大北农", "stock_code": "002385.SZ", "role": "peer", "sentiment_weight": 0.06 },
+    { "id": "zhengbang", "name": "正邦科技", "stock_code": "002157.SZ", "role": "peer", "sentiment_weight": 0.06 }
   ],
   "indicators": [
     {
@@ -73,6 +73,24 @@
       "historical_backfill": { "lookback_days": 1825 },
       "incremental_refresh": { "lookback_days": 28 },
       "required_fields": ["period", "value", "source_id", "generated_at"]
+    },
+    {
+      "id": "third_party_sow_capacity_monitoring",
+      "name": "第三方样本能繁母猪/产能监测",
+      "decision_stage": "industry_turning_point",
+      "data_family": "third_party_sample",
+      "granularity": "month",
+      "unit": "percent",
+      "raw_path": "data/raw/pork/third_party_sow_capacity_monitoring/",
+      "primary_source": {
+        "source_id": "public_research_reports",
+        "name": "公开研报或第三方样本数据转载",
+        "authority_level": "third_party_sample",
+        "third_party_market_data": true
+      },
+      "historical_backfill": { "lookback_days": 365 },
+      "incremental_refresh": { "lookback_days": 45 },
+      "required_fields": ["period", "provider", "value", "unit", "source_id", "generated_at"]
     },
     {
       "id": "leading_pork_company_stock_performance",
