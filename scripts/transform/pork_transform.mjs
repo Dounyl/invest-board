@@ -2,7 +2,7 @@
 import { loadConfig, readJsonlFiles, resolvePath, writeJson } from "../lib/porkDecisionConfig.mjs";
 
 const config = loadConfig();
-const records = readJsonlFiles(resolvePath("data/raw/pork"));
+const records = readJsonlFiles(resolvePath("data/raw/pork")).filter((record) => record.real_data === true);
 
 function latestBy(items, keyFn) {
   const map = new Map();
@@ -14,35 +14,52 @@ function latestBy(items, keyFn) {
   return [...map.values()];
 }
 
+function latestTradeDateByCompany(items) {
+  const map = new Map();
+  for (const item of items) {
+    const current = map.get(item.company_id);
+    if (!current || String(item.trade_date) > String(current.trade_date)) map.set(item.company_id, item);
+  }
+  return [...map.values()].sort((left, right) => String(left.stock_code).localeCompare(String(right.stock_code)));
+}
+
 function byIndicator(id) {
   return records.filter((record) => record.indicator_id === id);
 }
 
 const generatedAt = new Date().toISOString();
-const stock = latestBy(byIndicator("muyuan_stock_price"), (item) => `${item.company_id}:${item.trade_date}`);
+const stock = latestBy(byIndicator("muyuan_stock_price"), (item) => `${item.company_id}:${item.trade_date}`)
+  .sort((left, right) => String(left.trade_date).localeCompare(String(right.trade_date)));
 const industry = latestBy([
   ...byIndicator("breeding_sow_inventory"),
   ...byIndicator("live_hog_ex_factory_price")
 ], (item) => `${item.indicator_id}:${item.period}`);
-const sector = latestBy(byIndicator("leading_pork_company_stock_performance"), (item) => `${item.company_id}:${item.trade_date}`);
+const sector = latestTradeDateByCompany(latestBy(byIndicator("leading_pork_company_stock_performance"), (item) => `${item.company_id}:${item.trade_date}`));
 const costs = latestBy(byIndicator("leading_pork_company_cost_range"), (item) => `${item.company_id}:${item.report_period}`);
 const cash = latestBy(byIndicator("leading_pork_company_cash_condition"), (item) => `${item.company_id}:${item.report_period}`);
 
 const cashByCompany = new Map(cash.map((item) => [item.company_id, item]));
-const resilience = costs.map((cost) => ({
-  company_id: cost.company_id,
-  company_name: cost.company_name,
-  report_period: cost.report_period,
-  cost_low: cost.cost_low,
-  cost_high: cost.cost_high,
-  monetary_funds: cashByCompany.get(cost.company_id)?.monetary_funds ?? null,
-  short_term_interest_bearing_debt: cashByCompany.get(cost.company_id)?.short_term_interest_bearing_debt ?? null,
-  operating_cash_flow: cashByCompany.get(cost.company_id)?.operating_cash_flow ?? null,
-  asset_liability_ratio: cashByCompany.get(cost.company_id)?.asset_liability_ratio ?? null,
-  disclosure_basis: cost.disclosure_basis,
-  source_id: [cost.source_id, cashByCompany.get(cost.company_id)?.source_id].filter(Boolean).join(";"),
-  generated_at: [cost.generated_at, cashByCompany.get(cost.company_id)?.generated_at].filter(Boolean).sort().at(-1) ?? generatedAt
-}));
+const costByCompany = new Map(costs.map((item) => [item.company_id, item]));
+const resilienceCompanyIds = [...new Set([...costByCompany.keys(), ...cashByCompany.keys()])];
+const resilience = resilienceCompanyIds.map((companyId) => {
+  const company = config.companies.find((item) => item.id === companyId);
+  const cost = costByCompany.get(companyId);
+  const cashItem = cashByCompany.get(companyId);
+  return {
+    company_id: companyId,
+    company_name: cost?.company_name ?? cashItem?.company_name ?? company?.name ?? companyId,
+    report_period: cost?.report_period ?? cashItem?.report_period ?? null,
+    cost_low: cost?.cost_low ?? null,
+    cost_high: cost?.cost_high ?? null,
+    monetary_funds: cashItem?.monetary_funds ?? null,
+    short_term_interest_bearing_debt: cashItem?.short_term_interest_bearing_debt ?? null,
+    operating_cash_flow: cashItem?.operating_cash_flow ?? null,
+    asset_liability_ratio: cashItem?.asset_liability_ratio ?? null,
+    disclosure_basis: [cost?.disclosure_basis, cashItem?.disclosure_basis].filter(Boolean).join("; "),
+    source_id: [cost?.source_id, cashItem?.source_id].filter(Boolean).join(";"),
+    generated_at: [cost?.generated_at, cashItem?.generated_at].filter(Boolean).sort().at(-1) ?? generatedAt
+  };
+});
 
 const mart = {
   schema_version: "v1",

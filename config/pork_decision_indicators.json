@@ -3,8 +3,8 @@
   "domain": "pork",
   "dashboard_id": "pork-equity-decision-dashboard",
   "source_policy": {
-    "stock_price": "exchange_page_or_authorized_market_data_only",
-    "third_party_market_data_allowed": false,
+    "stock_price": "public_market_data_real_only",
+    "third_party_market_data_allowed": true,
     "raw_append_only": true
   },
   "companies": [

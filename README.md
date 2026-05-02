@@ -49,7 +49,7 @@ openspec/                # OpenSpec 变更管理
 
 ## 本地运行
 
-当前仓库提供一套可复现的 Node stub pipeline，用于打通 raw -> warehouse -> export -> web 闭环。真实授权数据源接入后，可替换 `scripts/ingest/` 下的 loader。
+当前仓库的猪肉看板 pipeline 坚持真实数据优先：股票行情通过公开行情接口冷启动抓取 2026-01-01 以来的日线数据，农业农村部月度页面抓取能繁母猪存栏与生猪出场价格，结构化财务报表抓取头部猪企现金状态。后续运行会根据已有 raw 中的最新真实交易日、月份或报告期增量刷新。尚未接入真实结构化适配器的公告成本区间会写入 0 条并输出日志，不生成样例数据。
 
 ```bash
 node scripts/ingest/pork_ingest.mjs
@@ -80,6 +80,13 @@ scripts/run_pork_daily.cmd
 
 ```bash
 set INVEST_BOARD_DATA_ROOT=web/dist/pork-verification
+node scripts/run_pork_daily.mjs --once
+```
+
+如需调整冷启动起始日期，可设置 `PORK_BACKFILL_START_DATE`：
+
+```bash
+set PORK_BACKFILL_START_DATE=2026-01-01
 node scripts/run_pork_daily.mjs --once
 ```
 
